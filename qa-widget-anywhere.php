@@ -52,16 +52,18 @@ class qa_widget_anywhere
 
 		if ( !in_array($tablename, $tableslc) )
 		{
+			// qa_opt( 'wdaw_active', '1' );
+
 			// TODO: index position, ordering and any other necessary fields
-			return 'CREATE TABLE IF NOT EXISTS ^widanywhere ('.
-				'`id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,'.
-				'`title` varchar(30) NOT NULL,'.
-				'`pages` varchar(800) NOT NULL,'.
-				'`position` varchar(30) NOT NULL,'.
-				'`ordering` smallint(5) unsigned NOT NULL,'.
-				'`content` text NOT NULL,'.
+			return 'CREATE TABLE IF NOT EXISTS ^widanywhere ( '.
+				'`id` smallint(5) unsigned NOT NULL AUTO_INCREMENT, '.
+				'`title` varchar(30) NOT NULL, '.
+				'`pages` varchar(800) NOT NULL, '.
+				'`position` varchar(30) NOT NULL, '.
+				'`ordering` smallint(5) unsigned NOT NULL, '.
+				'`content` text NOT NULL, '.
 				'PRIMARY KEY (`id`)'.
-			') ENGINE=InnoDB DEFAULT CHARSET=utf8';
+			' ) ENGINE=InnoDB DEFAULT CHARSET=utf8';
 		}
 
 		return null;
@@ -69,6 +71,18 @@ class qa_widget_anywhere
 
 	function admin_form(&$qa_content)
 	{
+		if ( qa_opt('wdaw_active') !== '1' )
+		{
+			return array(
+				'fields' => array(
+					array(
+						'type' => 'custom',
+						'html' => '<p>Widget Anywhere is not set up.</p>',
+					),
+				),
+			);
+		}
+
 		$saved_msg = null;
 		$wdaw_1 = '<b>some test html</b>';
 

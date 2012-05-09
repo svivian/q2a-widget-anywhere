@@ -4,6 +4,7 @@ class qa_widget_anywhere
 {
 	private $directory;
 	private $urltoroot;
+	private $dbtable = 'widgetanyw';
 
 	private $positionlang = array(
 		'head-tag' => 'Inside <head> tag',
@@ -46,16 +47,98 @@ class qa_widget_anywhere
 		$this->urltoroot = $urltoroot;
 	}
 
+	function match_request($request)
+	{
+		return $request == 'admin/'.$this->dbtable;
+	}
+
+	function process_request($request)
+	{
+		if ( qa_get_logged_in_level() < QA_USER_LEVEL_SUPER )
+			return;
+
+		$qa_content = qa_content_prepare();
+		$qa_content['title'] = 'Widget Anywhere';
+
+		if ( qa_clicked('wdaw_save_button') )
+		{
+			// TODO: save widget
+			$qa_content['form'] = array( 'ok' => 'Thinking about saving...' );
+			return $qa_content;
+		}
+
+		$editid = qa_get('edit');
+
+		if ( empty($editid) )
+		{
+			$widget = array(
+				'id' => 0,
+				'title' => '',
+				'pages' => array(),
+				'position' => '',
+				'ordering' => 1,
+				'content' => '',
+			);
+		}
+		else
+		{
+			$sql = 'SELECT * FROM ^'.$this->dbtable.' WHERE id=#';
+			$result = qa_db_query_sub($sql, $editid);
+			$widget = qa_db_read_one_assoc($result);
+		}
+
+		$qa_content['custom'] = '';
+
+		$qa_content['form']=array(
+			'tags' => 'METHOD="POST" ACTION="'.qa_self_html().'"',
+			'style' => 'wide',
+// 			'title' => 'Form title',
+
+			'fields' => array(
+				'title' => array(
+					'label' => 'Title',
+					'tags' => 'NAME="wdaw_title"',
+					'value' => $widget['title'],
+				),
+
+				'content' => array(
+					'type' => 'custom',
+					'label' => 'Pages',
+// 					'tags' => 'NAME="wdaw_pages"',
+					'value' => '<b>some test content</b><br><input type="checkbox">',
+				),
+
+				'content' => array(
+					'type' => 'textarea',
+					'label' => 'Content',
+					'tags' => 'NAME="wdaw_content"',
+					'value' => $widget['content'],
+					'rows' => 12,
+				),
+			),
+
+			'buttons' => array(
+				'ok' => array(
+					'tags' => 'NAME="wdaw_save_button"',
+					'label' => 'Save widget',
+					'value' => '1',
+				),
+			),
+		);
+
+		return $qa_content;
+	}
+
 	function init_queries($tableslc)
 	{
-		$tablename = qa_db_add_table_prefix('widanywhere');
+		$tablename = qa_db_add_table_prefix($this->dbtable);
 
 		if ( !in_array($tablename, $tableslc) )
 		{
 			// qa_opt( 'wdaw_active', '1' );
 
 			// TODO: index position, ordering and any other necessary fields
-			return 'CREATE TABLE IF NOT EXISTS ^widanywhere ( '.
+			return 'CREATE TABLE IF NOT EXISTS ^'.$this->dbtable.' ( '.
 				'`id` smallint(5) unsigned NOT NULL AUTO_INCREMENT, '.
 				'`title` varchar(30) NOT NULL, '.
 				'`pages` varchar(800) NOT NULL, '.
@@ -84,56 +167,32 @@ class qa_widget_anywhere
 		}
 
 		$saved_msg = null;
-		$wdaw_1 = '<b>some test html</b>';
 
 		if ( qa_clicked('wdaw_save_button') )
 		{
 			$saved_msg = 'Clicked the button :)';
 		}
 
-
-		$sql = 'SELECT id, title, pages, position FROM ^widanywhere ORDER BY position, ordering';
+		$sql = 'SELECT id, title, pages, position FROM ^'.$this->dbtable.' ORDER BY position, ordering';
 		$result = qa_db_query_sub($sql);
 		$widgets = qa_db_read_all_assoc($result);
 
-		$custom = '';
+		$urlbase = qa_path_to_root() . 'admin/' . $this->dbtable;
+
+		$custom = '<ul>';
 		foreach ( $widgets as $w )
 		{
-			$custom .= '<p><a href="#"><b>' . $w['title'] . '</b></a> - at <em>' . $w['position'] . '</em> on <tt>' . $w['pages'] . '</tt></p>';
+			$custom .= '<li><a href="' . $urlbase . '?edit=' . $w['id'] . '"><b>' . $w['title'] . '</b></a> (' . $w['position'] . ')</li>';
 		}
+
+		$custom .= '</ul>';
+		$custom .= '<p><a href="' . $urlbase . '">Add new widget</a></p>';
 
 
 		return array(
 			'ok' => $saved_msg,
 
 			'fields' => array(
-// 				array(
-// 					'id' => 'wdaw_content_1',
-// 					'label' => 'HTML content',
-// 					'tags' => 'name="wdaw_content_1"',
-// 					'value' => $wdaw_1,
-// 					'type' => 'textarea',
-// 					'rows' => 10,
-// 				),
-//
-// 				array(
-// 					'id' => 'wdaw_position_1',
-// 					'label' => 'Position',
-// 					'tags' => 'name="wdaw_position_1"',
-// 					'type' => 'select',
-// 					'options' => qa_admin_place_options(),
-// 					'value' => '',
-// 				),
-//
-// 				array(
-// 					'id' => 'wdaw_pages_1',
-// 					'label' => 'Show on these pages',
-// 					'tags' => 'name="wdaw_pages_1"',
-// 					'type' => 'select',
-// 					'options' => $this->templatelangkeys,
-// 					'value' => '',
-// 				),
-
 				array(
 					'type' => 'custom',
 					'html' => $custom,

@@ -3,6 +3,7 @@
 class qa_html_theme_layer extends qa_html_theme_base
 {
 	private $widgets = array();
+	private $dbtable = 'widgetanyw';
 
 	function doctype()
 	{
@@ -12,7 +13,7 @@ class qa_html_theme_layer extends qa_html_theme_base
 
 		if ( qa_opt('wdaw_active') === '1' )
 		{
-			$sql = 'SELECT * FROM ^widanywhere WHERE pages LIKE "%question%"';
+			$sql = 'SELECT * FROM ^'.$this->dbtable.' WHERE pages LIKE "%question%"';
 			$result = qa_db_query_sub($sql);
 			$this->widgets = qa_db_read_all_assoc($result);
 		}

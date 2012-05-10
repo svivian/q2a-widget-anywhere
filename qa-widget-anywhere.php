@@ -63,25 +63,36 @@ class qa_widget_anywhere
 		$qa_content = qa_content_prepare();
 		$qa_content['title'] = 'Widget Anywhere';
 		// $qa_content['custom'] = '';
+		$saved_msg = null;
+		$widget = array();
 
 		// TODO: save widget
-		if ( qa_clicked('widgetanyw_save_button') )
+		if ( qa_clicked('save_button') )
 		{
-			$qa_content['custom'] = '<pre>'.print_r($_POST, true).'</pre>';
-		
-		
-			$qa_content['form'] = array(
-				'ok' => 'Thinking about saving...',
-				'style' => 'wide',
-				'buttons' => array(
-					'ok' => array(
-						'tags' => 'NAME="widgetanyw_save_button"',
-						'label' => 'Save widget',
-						'value' => '1',
-					),
-				),
-			);
-			return $qa_content;
+
+			$widget['title'] = qa_post_text('wtitle');
+			$widget['position'] = qa_post_text('wposition');
+			$widget['content'] = qa_post_text('wcontent');
+
+			$pages = array();
+			if ( qa_post_text('wpages_all') )
+				$pages[] = 'all';
+			else
+			{
+				foreach ( $this->templatelangkeys as $key=>$lang )
+				{
+					if ( qa_post_text('wpages_'.$key) )
+						$pages[] = $key;
+				}
+			}
+
+			$widget['pages'] = implode( ',' ,$pages );
+
+			$sql = 'INSERT INTO ^'.$this->pluginkey.' (id, title, pages, position, ordering, content) VALUES (0, $, $, $, #, $)';
+			$success = qa_db_query_sub( $sql, $widget['title'], $widget['pages'], $widget['position'], $widget['ordering'], $widget['content'] );
+
+			$widget['id'] = qa_db_last_insert_id();
+			$saved_msg = 'Widget saved.';
 		}
 
 		// fetch requested widget or display blank
@@ -105,10 +116,10 @@ class qa_widget_anywhere
 		}
 
 
-		$pages_html = '<label><input type="checkbox" name="pages[all]"> ' . qa_lang_html('admin/widget_all_pages') . '</label><br><br>';
+		$pages_html = '<label><input type="checkbox" name="wpages_all"> ' . qa_lang_html('admin/widget_all_pages') . '</label><br><br>';
 		foreach ( $this->templatelangkeys as $tmpl=>$langkey )
 		{
-			$pages_html .= '<label><input type="checkbox" name="pages[' . $tmpl . ']"> ' . qa_lang_html($langkey) . '</label><br>';
+			$pages_html .= '<label><input type="checkbox" name="wpages_' . $tmpl . '"> ' . qa_lang_html($langkey) . '</label><br>';
 		}
 
 		$qa_content['form']=array(
@@ -116,18 +127,23 @@ class qa_widget_anywhere
 			'style' => 'wide',
 
 			'fields' => array(
+				'id' => array(
+					'type' => 'hidden',
+					'value' => $widget['id'],
+				),
+
 				'title' => array(
 					'label' => 'Title',
-					'tags' => 'NAME="widgetanyw_title"',
+					'tags' => 'NAME="wtitle"',
 					'value' => $widget['title'],
 				),
-				
+
 				'position' => array(
 					'type' => 'select',
 					'label' => 'Position',
-					'tags' => 'NAME="widgetanyw_positon"',
+					'tags' => 'NAME="wposition"',
 					'options' => $this->positionlangs,
-					'value' => '',
+					'value' => $widget['position'],
 				),
 
 				'pages' => array(
@@ -136,10 +152,17 @@ class qa_widget_anywhere
 					'html' => $pages_html,
 				),
 
+				'ordering' => array(
+					'type' => 'number',
+					'label' => 'Order',
+					'tags' => 'NAME="wordering"',
+					'value' => $widget['ordering'],
+				),
+
 				'content' => array(
 					'type' => 'textarea',
-					'label' => 'Content',
-					'tags' => 'NAME="widgetanyw_content"',
+					'label' => 'Content (HTML)',
+					'tags' => 'NAME="wcontent"',
 					'value' => $widget['content'],
 					'rows' => 12,
 				),
@@ -147,7 +170,7 @@ class qa_widget_anywhere
 
 			'buttons' => array(
 				'ok' => array(
-					'tags' => 'NAME="widgetanyw_save_button"',
+					'tags' => 'NAME="save_button"',
 					'label' => 'Save widget',
 					'value' => '1',
 				),

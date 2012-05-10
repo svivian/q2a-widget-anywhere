@@ -4,15 +4,17 @@ class qa_widget_anywhere
 {
 	private $directory;
 	private $urltoroot;
-	private $dbtable = 'widgetanyw';
+	private $pluginkey = 'widgetanyw';
+	private $opt = 'widgetanyw_active';
 
-	private $positionlang = array(
-		'head-tag' => 'Inside <head> tag',
+	private $positionlangs = array(
 		'header-before' => 'Before header',
 		'header-after' => 'After header',
 		'q-item-before' => 'Before question text',
 		'q-item-after' => 'After question text',
+		'a-list-after-first' => 'After first answer',
 		'a-list-after' => 'After answer list',
+		'head-tag' => 'End of &lt;head&gt; tag',
 	);
 
 	// copied from qa-page-admin-widgets.php
@@ -49,26 +51,41 @@ class qa_widget_anywhere
 
 	function match_request($request)
 	{
-		return $request == 'admin/'.$this->dbtable;
+		return $request == 'admin/'.$this->pluginkey;
 	}
 
 	function process_request($request)
 	{
+		// double check we are admin
 		if ( qa_get_logged_in_level() < QA_USER_LEVEL_SUPER )
 			return;
 
 		$qa_content = qa_content_prepare();
 		$qa_content['title'] = 'Widget Anywhere';
+		// $qa_content['custom'] = '';
 
-		if ( qa_clicked('wdaw_save_button') )
+		// TODO: save widget
+		if ( qa_clicked('widgetanyw_save_button') )
 		{
-			// TODO: save widget
-			$qa_content['form'] = array( 'ok' => 'Thinking about saving...' );
+			$qa_content['custom'] = '<pre>'.print_r($_POST, true).'</pre>';
+		
+		
+			$qa_content['form'] = array(
+				'ok' => 'Thinking about saving...',
+				'style' => 'wide',
+				'buttons' => array(
+					'ok' => array(
+						'tags' => 'NAME="widgetanyw_save_button"',
+						'label' => 'Save widget',
+						'value' => '1',
+					),
+				),
+			);
 			return $qa_content;
 		}
 
+		// fetch requested widget or display blank
 		$editid = qa_get('edit');
-
 		if ( empty($editid) )
 		{
 			$widget = array(
@@ -82,36 +99,47 @@ class qa_widget_anywhere
 		}
 		else
 		{
-			$sql = 'SELECT * FROM ^'.$this->dbtable.' WHERE id=#';
+			$sql = 'SELECT * FROM ^'.$this->pluginkey.' WHERE id=#';
 			$result = qa_db_query_sub($sql, $editid);
 			$widget = qa_db_read_one_assoc($result);
 		}
 
-		$qa_content['custom'] = '';
+
+		$pages_html = '<label><input type="checkbox" name="pages[all]"> ' . qa_lang_html('admin/widget_all_pages') . '</label><br><br>';
+		foreach ( $this->templatelangkeys as $tmpl=>$langkey )
+		{
+			$pages_html .= '<label><input type="checkbox" name="pages[' . $tmpl . ']"> ' . qa_lang_html($langkey) . '</label><br>';
+		}
 
 		$qa_content['form']=array(
 			'tags' => 'METHOD="POST" ACTION="'.qa_self_html().'"',
 			'style' => 'wide',
-// 			'title' => 'Form title',
 
 			'fields' => array(
 				'title' => array(
 					'label' => 'Title',
-					'tags' => 'NAME="wdaw_title"',
+					'tags' => 'NAME="widgetanyw_title"',
 					'value' => $widget['title'],
 				),
+				
+				'position' => array(
+					'type' => 'select',
+					'label' => 'Position',
+					'tags' => 'NAME="widgetanyw_positon"',
+					'options' => $this->positionlangs,
+					'value' => '',
+				),
 
-				'content' => array(
+				'pages' => array(
 					'type' => 'custom',
 					'label' => 'Pages',
-// 					'tags' => 'NAME="wdaw_pages"',
-					'value' => '<b>some test content</b><br><input type="checkbox">',
+					'html' => $pages_html,
 				),
 
 				'content' => array(
 					'type' => 'textarea',
 					'label' => 'Content',
-					'tags' => 'NAME="wdaw_content"',
+					'tags' => 'NAME="widgetanyw_content"',
 					'value' => $widget['content'],
 					'rows' => 12,
 				),
@@ -119,7 +147,7 @@ class qa_widget_anywhere
 
 			'buttons' => array(
 				'ok' => array(
-					'tags' => 'NAME="wdaw_save_button"',
+					'tags' => 'NAME="widgetanyw_save_button"',
 					'label' => 'Save widget',
 					'value' => '1',
 				),
@@ -129,16 +157,15 @@ class qa_widget_anywhere
 		return $qa_content;
 	}
 
-	function init_queries($tableslc)
+	function admin_form(&$qa_content)
 	{
-		$tablename = qa_db_add_table_prefix($this->dbtable);
+		$saved_msg = null;
 
-		if ( !in_array($tablename, $tableslc) )
+		// activate plugin (create database table if it doesn't exist)
+		if ( qa_clicked('widgetanyw_activate_button') )
 		{
-			// qa_opt( 'wdaw_active', '1' );
-
-			// TODO: index position, ordering and any other necessary fields
-			return 'CREATE TABLE IF NOT EXISTS ^'.$this->dbtable.' ( '.
+			$sql_create =
+				'CREATE TABLE IF NOT EXISTS ^'.$this->pluginkey.' ( '.
 				'`id` smallint(5) unsigned NOT NULL AUTO_INCREMENT, '.
 				'`title` varchar(30) NOT NULL, '.
 				'`pages` varchar(800) NOT NULL, '.
@@ -147,46 +174,48 @@ class qa_widget_anywhere
 				'`content` text NOT NULL, '.
 				'PRIMARY KEY (`id`)'.
 			' ) ENGINE=InnoDB DEFAULT CHARSET=utf8';
+			$result = qa_db_query_sub($sql_create);
+
+			if ( $result === true )
+			{
+				qa_opt( $this->opt, '1' );
+				$saved_msg = 'Plugin activated!';
+			}
 		}
 
-		return null;
-	}
-
-	function admin_form(&$qa_content)
-	{
-		if ( qa_opt('wdaw_active') !== '1' )
+		// button to set up plugin
+		if ( qa_opt($this->opt) !== '1' )
 		{
 			return array(
 				'fields' => array(
 					array(
 						'type' => 'custom',
-						'html' => '<p>Widget Anywhere is not set up.</p>',
+						'error' => 'Widget Anywhere is not set up yet.',
+					),
+				),
+				'buttons' => array(
+					array(
+						'label' => 'Set up',
+						'tags' => 'name="widgetanyw_activate_button"',
 					),
 				),
 			);
 		}
 
-		$saved_msg = null;
 
-		if ( qa_clicked('wdaw_save_button') )
-		{
-			$saved_msg = 'Clicked the button :)';
-		}
-
-		$sql = 'SELECT id, title, pages, position FROM ^'.$this->dbtable.' ORDER BY position, ordering';
+		// plugin is active, so show list of current widgets
+		$sql = 'SELECT id, title, pages, position FROM ^'.$this->pluginkey.' ORDER BY position, ordering';
 		$result = qa_db_query_sub($sql);
 		$widgets = qa_db_read_all_assoc($result);
 
-		$urlbase = qa_path_to_root() . 'admin/' . $this->dbtable;
-
-		$custom = '<ul>';
+		$urlbase = qa_path_to_root() . 'admin/' . $this->pluginkey;
+		$custom = '<ul>'."\n";
 		foreach ( $widgets as $w )
 		{
-			$custom .= '<li><a href="' . $urlbase . '?edit=' . $w['id'] . '"><b>' . $w['title'] . '</b></a> (' . $w['position'] . ')</li>';
+			$custom .= '<li><a href="' . $urlbase . '?edit=' . $w['id'] . '"><b>' . $w['title'] . '</b></a> (' . $w['position'] . ')</li>'."\n";
 		}
-
-		$custom .= '</ul>';
-		$custom .= '<p><a href="' . $urlbase . '">Add new widget</a></p>';
+		$custom .= '</ul>'."\n";
+		$custom .= '<p><a href="' . qa_path('admin/' . $this->pluginkey) . '">Add new widget</a></p>'."\n";
 
 
 		return array(
@@ -196,13 +225,6 @@ class qa_widget_anywhere
 				array(
 					'type' => 'custom',
 					'html' => $custom,
-				),
-			),
-
-			'buttons' => array(
-				array(
-					'label' => 'Save Changes',
-					'tags' => 'name="wdaw_save_button"',
 				),
 			),
 		);

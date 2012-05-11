@@ -14,8 +14,8 @@ class qa_html_theme_layer extends qa_html_theme_base
 
 		if ( qa_opt($this->opt) === '1' )
 		{
-			$sql = 'SELECT * FROM ^'.$this->pluginkey.' WHERE pages LIKE "%question%"';
-			$result = qa_db_query_sub($sql);
+			$sql = 'SELECT * FROM ^'.$this->pluginkey.' WHERE pages="all" OR pages LIKE $';
+			$result = qa_db_query_sub($sql, '%'.$this->template.'%');
 			$this->widgets = qa_db_read_all_assoc($result);
 		}
 
@@ -36,6 +36,14 @@ class qa_html_theme_layer extends qa_html_theme_base
 		parent::q_view($q_view);
 
 		// TODO: position after question
+		foreach ( $this->widgets as $w )
+		{
+			if ( $w['position'] == 'test' )
+			{
+			
+			}
+		}
+		
 	}
 
 	function a_list($a_list)
@@ -47,5 +55,10 @@ class qa_html_theme_layer extends qa_html_theme_base
 		// TODO: position after all answers
 	}
 
+	// testing function
+	private function _debug($s)
+	{
+		echo '<pre align="left">' . print_r($s,true) . '</pre>';
+	}
 
 }

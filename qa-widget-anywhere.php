@@ -62,43 +62,20 @@ class qa_widget_anywhere
 
 		$qa_content = qa_content_prepare();
 		$qa_content['title'] = 'Widget Anywhere';
-		// $qa_content['custom'] = '';
-		$saved_msg = null;
-		$widget = array();
+		$qa_content['custom'] = '<p><a href="' . qa_path('admin/plugins') . '">&laquo; back to plugins admin</a></p>';
 
-		// TODO: save widget
+		$saved_msg = null;
+		$editid = qa_get('editid');
+
 		if ( qa_clicked('save_button') )
 		{
-
-			$widget['title'] = qa_post_text('wtitle');
-			$widget['position'] = qa_post_text('wposition');
-			$widget['content'] = qa_post_text('wcontent');
-
-			$pages = array();
-			if ( qa_post_text('wpages_all') )
-				$pages[] = 'all';
-			else
-			{
-				foreach ( $this->templatelangkeys as $key=>$lang )
-				{
-					if ( qa_post_text('wpages_'.$key) )
-						$pages[] = $key;
-				}
-			}
-
-			$widget['pages'] = implode( ',' ,$pages );
-
-			$sql = 'INSERT INTO ^'.$this->pluginkey.' (id, title, pages, position, ordering, content) VALUES (0, $, $, $, #, $)';
-			$success = qa_db_query_sub( $sql, $widget['title'], $widget['pages'], $widget['position'], $widget['ordering'], $widget['content'] );
-
-			$widget['id'] = qa_db_last_insert_id();
+			// save widget
+			$widget = $this->save_widget();
 			$saved_msg = 'Widget saved.';
 		}
-
-		// fetch requested widget or display blank
-		$editid = qa_get('edit');
-		if ( empty($editid) )
+		else if ( empty($editid) )
 		{
+			// display blank form
 			$widget = array(
 				'id' => 0,
 				'title' => '',
@@ -110,28 +87,27 @@ class qa_widget_anywhere
 		}
 		else
 		{
+			// load specified widget
 			$sql = 'SELECT * FROM ^'.$this->pluginkey.' WHERE id=#';
 			$result = qa_db_query_sub($sql, $editid);
 			$widget = qa_db_read_one_assoc($result);
 		}
 
-
-		$pages_html = '<label><input type="checkbox" name="wpages_all"> ' . qa_lang_html('admin/widget_all_pages') . '</label><br><br>';
+		$sel_pages = explode( ',', $widget['pages'] );
+		$chkd = in_array('all', $sel_pages) ? 'checked' : '';
+		$pages_html = '<label><input type="checkbox" name="wpages_all" ' . $chkd . '> ' . qa_lang_html('admin/widget_all_pages') . '</label><br><br>';
 		foreach ( $this->templatelangkeys as $tmpl=>$langkey )
 		{
-			$pages_html .= '<label><input type="checkbox" name="wpages_' . $tmpl . '"> ' . qa_lang_html($langkey) . '</label><br>';
+			$chkd = in_array($tmpl, $sel_pages) ? 'checked' : '';
+			$pages_html .= '<label><input type="checkbox" name="wpages_' . $tmpl . '" ' . $chkd . '> ' . qa_lang_html($langkey) . '</label><br>';
 		}
 
 		$qa_content['form']=array(
 			'tags' => 'METHOD="POST" ACTION="'.qa_self_html().'"',
 			'style' => 'wide',
+			'ok' => $saved_msg,
 
 			'fields' => array(
-				'id' => array(
-					'type' => 'hidden',
-					'value' => $widget['id'],
-				),
-
 				'title' => array(
 					'label' => 'Title',
 					'tags' => 'NAME="wtitle"',
@@ -143,7 +119,7 @@ class qa_widget_anywhere
 					'label' => 'Position',
 					'tags' => 'NAME="wposition"',
 					'options' => $this->positionlangs,
-					'value' => $widget['position'],
+					'value' => $this->positionlangs[$widget['position']],
 				),
 
 				'pages' => array(
@@ -168,8 +144,12 @@ class qa_widget_anywhere
 				),
 			),
 
+			'hidden' => array(
+				'wid' => $widget['id'],
+			),
+
 			'buttons' => array(
-				'ok' => array(
+				'save' => array(
 					'tags' => 'NAME="save_button"',
 					'label' => 'Save widget',
 					'value' => '1',
@@ -231,14 +211,15 @@ class qa_widget_anywhere
 		$result = qa_db_query_sub($sql);
 		$widgets = qa_db_read_all_assoc($result);
 
-		$urlbase = qa_path_to_root() . 'admin/' . $this->pluginkey;
+		$urlbase = 'admin/' . $this->pluginkey;
 		$custom = '<ul>'."\n";
 		foreach ( $widgets as $w )
 		{
-			$custom .= '<li><a href="' . $urlbase . '?edit=' . $w['id'] . '"><b>' . $w['title'] . '</b></a> (' . $w['position'] . ')</li>'."\n";
+			$param = array( 'editid' => $w['id'] );
+			$custom .= '<li><a href="' . qa_path($urlbase, $param) . '"><b>' . $w['title'] . '</b></a> (' . $w['position'] . ')</li>'."\n";
 		}
 		$custom .= '</ul>'."\n";
-		$custom .= '<p><a href="' . qa_path('admin/' . $this->pluginkey) . '">Add new widget</a></p>'."\n";
+		$custom .= '<p><a href="' . qa_path($urlbase) . '">Add new widget</a></p>'."\n";
 
 
 		return array(
@@ -253,4 +234,48 @@ class qa_widget_anywhere
 		);
 	}
 
+
+
+	private function save_widget()
+	{
+		$widget = array();
+		$widget['id'] = qa_post_text('wid');
+		$widget['title'] = qa_post_text('wtitle');
+		$widget['position'] = qa_post_text('wposition');
+		$widget['ordering'] = qa_post_text('wordering');
+		$widget['content'] = qa_post_text('wcontent');
+
+		$pages = array();
+		if ( qa_post_text('wpages_all') )
+			$pages[] = 'all';
+		else
+		{
+			foreach ( $this->templatelangkeys as $key=>$lang )
+			{
+				if ( qa_post_text('wpages_'.$key) )
+					$pages[] = $key;
+			}
+		}
+		$widget['pages'] = implode( ',', $pages );
+
+		if ( $widget['id'] === '0' )
+		{
+			$sql = 'INSERT INTO ^'.$this->pluginkey.' (id, title, pages, position, ordering, content) VALUES (0, $, $, $, #, $)';
+			$success = qa_db_query_sub( $sql, $widget['title'], $widget['pages'], $widget['position'], $widget['ordering'], $widget['content'] );
+			$widget['id'] = qa_db_last_insert_id();
+		}
+		else
+		{
+			$sql = 'UPDATE ^'.$this->pluginkey.' SET title=$, pages=$, position=$, ordering=#, content=$ WHERE id=#';
+			$success = qa_db_query_sub( $sql, $widget['title'], $widget['pages'], $widget['position'], $widget['ordering'], $widget['content'], $widget['id'] );
+		}
+
+		return $widget;
+	}
+
+	// testing function
+	private function _debug($s)
+	{
+		echo '<pre align="left">' . print_r($s,true) . '</pre>';
+	}
 }

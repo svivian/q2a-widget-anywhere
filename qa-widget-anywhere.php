@@ -45,15 +45,38 @@ class qa_widget_anywhere
 		'admin' => 'admin/admin_title',
 	);
 
-	public function load_module($directory, $urltoroot)
+	public function load_module( $directory, $urltoroot )
 	{
 		$this->directory = $directory;
 		$this->urltoroot = $urltoroot;
 	}
 
-	function match_request($request)
+	function match_request( $request )
 	{
 		return $request == 'admin/'.$this->pluginkey;
+	}
+
+	function init_queries( $tableslc )
+	{
+		$tablename = qa_db_add_table_prefix($this->pluginkey);
+
+		if ( !in_array($tablename, $tableslc) )
+		{
+			// TODO: index position, ordering and any other necessary fields
+			return 'CREATE TABLE IF NOT EXISTS ^'.$this->pluginkey.' ( '.
+				'`id` smallint(5) unsigned NOT NULL AUTO_INCREMENT, '.
+				'`title` varchar(30) NOT NULL, '.
+				'`pages` varchar(800) NOT NULL, '.
+				'`position` varchar(30) NOT NULL, '.
+				'`ordering` smallint(5) unsigned NOT NULL, '.
+				'`content` text NOT NULL, '.
+				'PRIMARY KEY (`id`)'.
+			' ) ENGINE=InnoDB DEFAULT CHARSET=utf8';
+		}
+
+		// we're already set up
+		qa_opt( $this->opt, '1' );
+		return null;
 	}
 
 	function process_request($request)
@@ -96,7 +119,7 @@ class qa_widget_anywhere
 		}
 
 		$sel_position = empty($widget['position']) ? null : $this->positionlangs[$widget['position']];
-		
+
 		// set up page (template) list
 		$sel_pages = explode( ',', $widget['pages'] );
 		$chkd = in_array('all', $sel_pages) ? 'checked' : '';
@@ -169,42 +192,14 @@ class qa_widget_anywhere
 	{
 		$saved_msg = null;
 
-		// activate plugin (create database table if it doesn't exist)
-		if ( qa_clicked('widgetanyw_activate_button') )
-		{
-			$sql_create =
-				'CREATE TABLE IF NOT EXISTS ^'.$this->pluginkey.' ( '.
-				'`id` smallint(5) unsigned NOT NULL AUTO_INCREMENT, '.
-				'`title` varchar(30) NOT NULL, '.
-				'`pages` varchar(800) NOT NULL, '.
-				'`position` varchar(30) NOT NULL, '.
-				'`ordering` smallint(5) unsigned NOT NULL, '.
-				'`content` text NOT NULL, '.
-				'PRIMARY KEY (`id`)'.
-			' ) ENGINE=InnoDB DEFAULT CHARSET=utf8';
-			$result = qa_db_query_sub($sql_create);
-
-			if ( $result === true )
-			{
-				qa_opt( $this->opt, '1' );
-				$saved_msg = 'Plugin activated!';
-			}
-		}
-
-		// button to set up plugin
+		// link to set up plugin
 		if ( qa_opt($this->opt) !== '1' )
 		{
 			return array(
 				'fields' => array(
 					array(
 						'type' => 'custom',
-						'error' => 'Widget Anywhere is not set up yet.',
-					),
-				),
-				'buttons' => array(
-					array(
-						'label' => 'Set up',
-						'tags' => 'name="widgetanyw_activate_button"',
+						'error' => 'Widget Anywhere is not set up yet. <a href="' . qa_path('install') . '">Run setup</a>',
 					),
 				),
 			);

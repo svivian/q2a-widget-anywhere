@@ -16,15 +16,6 @@ class qa_html_theme_layer extends qa_html_theme_base
 		a-list-after
 	*/
 
-	function _output_widget( $pos )
-	{
-		foreach ( $this->widgets as $wid )
-		{
-			if ( $wid['position'] === $pos )
-				$this->output( $wid['content'] );
-		}
-	}
-
 	function doctype()
 	{
 		if ( qa_opt($this->opt) === '1' )
@@ -41,8 +32,6 @@ class qa_html_theme_layer extends qa_html_theme_base
 
 			// $this->_debug($this->widgets);
 		}
-
-		$this->_debug($this->content['widgets']);
 
 		parent::doctype();
 	}
@@ -103,31 +92,33 @@ class qa_html_theme_layer extends qa_html_theme_base
 		$this->_output_widget('sidepanel-bottom');
 	}
 
-	// function footer()
-	// {
-		// // position at bottom of page, before footer
-		// $this->output('TESTEE');
+	/*function widgets($region, $place)
+	{
+		if (count(@$this->content['widgets'][$region][$place]))
+		{
+			$this->output('<DIV CLASS="qa-widgets-'.$region.' qa-widgets-'.$region.'-'.$place.'">');
 
-		// parent::footer();
-	// }
+			foreach ($this->content['widgets'][$region][$place] as $module)
+			{
+				$this->output('<DIV CLASS="qa-widget-'.$region.' qa-widget-'.$region.'-'.$place.'">');
+				$module->output_widget($region, $place, $this, $this->template, $this->request, $this->content);
+				$this->output('</DIV>');
+			}
 
-	// function widgets($region, $place)
-	// {
-		// if (count(@$this->content['widgets'][$region][$place]))
-		// {
-			// $this->output('<DIV CLASS="qa-widgets-'.$region.' qa-widgets-'.$region.'-'.$place.'">');
+			$this->output('</DIV>', '');
+		}
+	}*/
 
-			// foreach ($this->content['widgets'][$region][$place] as $module)
-			// {
-				// $this->output('<DIV CLASS="qa-widget-'.$region.' qa-widget-'.$region.'-'.$place.'">');
-				// $module->output_widget($region, $place, $this, $this->template, $this->request, $this->content);
-				// $this->output('</DIV>');
-			// }
 
-			// $this->output('</DIV>', '');
-		// }
-	// }
-
+	// outputs all widgets for specified position
+	private function _output_widget( $pos )
+	{
+		foreach ( $this->widgets as $wid )
+		{
+			if ( $wid['position'] === $pos )
+				$this->output( $wid['content'] );
+		}
+	}
 
 	// testing function
 	private function _debug($s)

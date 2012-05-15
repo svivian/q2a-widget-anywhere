@@ -8,13 +8,15 @@ class qa_widget_anywhere
 	private $opt = 'widgetanyw_active';
 
 	private $positionlangs = array(
+		'head-tag' => 'End of &lt;head&gt; tag',
 		'header-before' => 'Before header',
 		'header-after' => 'After header',
 		'q-item-before' => 'Before question text',
 		'q-item-after' => 'After question text',
-		'a-list-after-first' => 'After first answer',
+		// 'a-list-after-first' => 'After first answer',
 		'a-list-after' => 'After answer list',
-		'head-tag' => 'End of &lt;head&gt; tag',
+		'sidepanel-top' => 'Side panel - top',
+		'sidepanel-bottom' => 'Side panel - bottom',
 	);
 
 	// copied from qa-page-admin-widgets.php
@@ -79,7 +81,7 @@ class qa_widget_anywhere
 			$widget = array(
 				'id' => 0,
 				'title' => '',
-				'pages' => array(),
+				'pages' => '',
 				'position' => '',
 				'ordering' => 1,
 				'content' => '',
@@ -93,6 +95,9 @@ class qa_widget_anywhere
 			$widget = qa_db_read_one_assoc($result);
 		}
 
+		$sel_position = empty($widget['position']) ? null : $this->positionlangs[$widget['position']];
+		
+		// set up page (template) list
 		$sel_pages = explode( ',', $widget['pages'] );
 		$chkd = in_array('all', $sel_pages) ? 'checked' : '';
 		$pages_html = '<label><input type="checkbox" name="wpages_all" ' . $chkd . '> ' . qa_lang_html('admin/widget_all_pages') . '</label><br><br>';
@@ -119,7 +124,7 @@ class qa_widget_anywhere
 					'label' => 'Position',
 					'tags' => 'NAME="wposition"',
 					'options' => $this->positionlangs,
-					'value' => $this->positionlangs[$widget['position']],
+					'value' => $sel_position,
 				),
 
 				'pages' => array(

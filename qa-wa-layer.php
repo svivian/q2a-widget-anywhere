@@ -29,8 +29,6 @@ class qa_html_theme_layer extends qa_html_theme_base
 				if ( $wid['pages'][0] == 'all' || in_array( $this->template, $wid['pages'] ) )
 					$this->widgets[] = $wid;
 			}
-
-			// $this->_debug($this->widgets);
 		}
 
 		parent::doctype();
@@ -92,23 +90,6 @@ class qa_html_theme_layer extends qa_html_theme_base
 		$this->_output_widget('sidepanel-bottom');
 	}
 
-	/*function widgets($region, $place)
-	{
-		if (count(@$this->content['widgets'][$region][$place]))
-		{
-			$this->output('<DIV CLASS="qa-widgets-'.$region.' qa-widgets-'.$region.'-'.$place.'">');
-
-			foreach ($this->content['widgets'][$region][$place] as $module)
-			{
-				$this->output('<DIV CLASS="qa-widget-'.$region.' qa-widget-'.$region.'-'.$place.'">');
-				$module->output_widget($region, $place, $this, $this->template, $this->request, $this->content);
-				$this->output('</DIV>');
-			}
-
-			$this->output('</DIV>', '');
-		}
-	}*/
-
 
 	// outputs all widgets for specified position
 	private function _output_widget( $pos )
@@ -119,6 +100,7 @@ class qa_html_theme_layer extends qa_html_theme_base
 				$this->output( $wid['content'] );
 		}
 	}
+
 
 	// testing function
 	private function _debug($s)

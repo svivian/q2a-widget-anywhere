@@ -273,9 +273,11 @@ class qa_widget_anywhere
 		return $widget;
 	}
 
+
 	// testing function
 	private function _debug($s)
 	{
 		echo '<pre align="left">' . print_r($s,true) . '</pre>';
 	}
+
 }

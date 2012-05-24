@@ -4,6 +4,7 @@ class qa_widget_anywhere
 {
 	private $directory;
 	private $urltoroot;
+	private $anchor;
 	private $pluginkey = 'widgetanyw';
 	private $opt = 'widgetanyw_active';
 
@@ -49,6 +50,7 @@ class qa_widget_anywhere
 	{
 		$this->directory = $directory;
 		$this->urltoroot = $urltoroot;
+		$this->anchor = md5('page/Widget Anywhere');
 	}
 
 	function match_request( $request )
@@ -79,20 +81,30 @@ class qa_widget_anywhere
 		return null;
 	}
 
-	function process_request($request)
+	function process_request( $request )
 	{
 		// double check we are admin
 		if ( qa_get_logged_in_level() < QA_USER_LEVEL_SUPER )
 			return;
 
+		if ( qa_clicked('docancel') )
+			qa_redirect('admin/plugins');
+
 		$qa_content = qa_content_prepare();
 		$qa_content['title'] = 'Widget Anywhere';
-		$qa_content['custom'] = '<p><a href="' . qa_path('admin/plugins') . '">&laquo; back to plugins admin</a></p>';
+		$qa_content['custom'] = '<p><a href="' . qa_path('admin/plugins').'#'.qa_html($this->anchor) . '">&laquo; back to plugin options</a></p>';
 
 		$saved_msg = null;
 		$editid = qa_get('editid');
 
-		if ( qa_clicked('save_button') )
+		// $qa_content['custom'] .= qa_post_text('dodelete');
+
+		if ( qa_post_text('dodelete') )
+		{
+			$this->delete_widget();
+			qa_redirect( 'admin/plugins' );
+		}
+		else if ( qa_clicked('save_button') )
 		{
 			// save widget
 			$widget = $this->save_widget();
@@ -130,7 +142,7 @@ class qa_widget_anywhere
 			$pages_html .= '<label><input type="checkbox" name="wpages_' . $tmpl . '" ' . $chkd . '> ' . qa_lang_html($langkey) . '</label><br>';
 		}
 
-		$qa_content['form']=array(
+		$qa_content['form'] = array(
 			'tags' => 'METHOD="POST" ACTION="'.qa_self_html().'"',
 			'style' => 'wide',
 			'ok' => $saved_msg,
@@ -182,13 +194,28 @@ class qa_widget_anywhere
 					'label' => 'Save widget',
 					'value' => '1',
 				),
+
+				'cancel' => array(
+					'tags' => 'NAME="docancel"',
+					'label' => qa_lang_html('main/cancel_button'),
+				),
 			),
 		);
+
+		if ( $widget['id'] > 0 )
+		{
+			$qa_content['form']['fields']['delete'] = array(
+				'tags' => 'NAME="dodelete"',
+				'label' => 'Delete widget',
+				'value' => 0,
+				'type' => 'checkbox',
+			);
+		}
 
 		return $qa_content;
 	}
 
-	function admin_form(&$qa_content)
+	function admin_form( &$qa_content )
 	{
 		$saved_msg = null;
 
@@ -216,7 +243,12 @@ class qa_widget_anywhere
 		foreach ( $widgets as $w )
 		{
 			$param = array( 'editid' => $w['id'] );
-			$custom .= '<li><a href="' . qa_path($urlbase, $param) . '"><b>' . $w['title'] . '</b></a> (' . $w['position'] . ')</li>'."\n";
+			$posit = $this->positionlangs[$w['position']];
+			$custom .= '<li>';
+			$custom .= '<b>' . $w['title'] . '</b>';
+			$custom .= ' - <a href="' . qa_path($urlbase, $param) . '">' . $posit . '</a>';
+			// $custom .= ' - <a style="font-size:11px;color:#a00">Delete widget</a>';
+			$custom .= '</li>'."\n";
 		}
 		$custom .= '</ul>'."\n";
 		$custom .= '<p><a href="' . qa_path($urlbase) . '">Add new widget</a></p>'."\n";
@@ -271,6 +303,13 @@ class qa_widget_anywhere
 		}
 
 		return $widget;
+	}
+
+	private function delete_widget()
+	{
+		$wid = qa_post_text('wid');
+		$sql = 'DELETE FROM ^'.$this->pluginkey.' WHERE id=#';
+		return qa_db_query_sub( $sql, $wid );
 	}
 
 

@@ -3,7 +3,7 @@
 	Plugin Name: Widget Anywhere
 	Plugin URI: https://github.com/svivian/q2a-widget-anywhere
 	Plugin Description: Add custom HTML on any page(s) in a variety of locations. Useful for Google Adsense, Analytics, adding special instructions for asking questions, and so on.
-	Plugin Version: 0.9 (beta)
+	Plugin Version: 1.0
 	Plugin Date: 2012-05-01
 	Plugin Author: Scott Vivian
 	Plugin Author URI: http://codelair.co.uk/

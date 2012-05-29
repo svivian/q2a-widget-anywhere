@@ -1,4 +1,8 @@
 <?php
+/*
+	Question2Answer Widget Anywhere plugin, v1.0
+	License: http://www.gnu.org/licenses/gpl.html
+*/
 
 class qa_widget_anywhere
 {
@@ -11,30 +15,22 @@ class qa_widget_anywhere
 	// NOTE: most of the old positions have been removed in favour of the standard Q2A positions
 	private $positionlangs = array(
 		'head-tag' => 'Inside &lt;HEAD&gt; tag',
-		// 'header-before' => 'Before header',
-		// 'header-after' => 'After header',
-		// 'title-after' => 'After page title (&lt;H1&gt;)',
-		// 'q-item-before' => 'Before question text',
 		'q-item-after' => 'After question text',
-		// 'a-list-after-first' => 'After first answer',
-		// 'a-list-after' => 'After answer list',
-		// 'sidepanel-top' => 'Side panel - top',
-		// 'sidepanel-bottom' => 'Side panel - bottom',
 
-		'full-top' => 'place_full_top',
-		'full-high' => 'place_full_below_nav',
-		'full-low' => 'place_full_below_content',
-		'full-bottom' => 'place_full_below_footer',
+		'full-top'    => 'options/place_full_top',
+		'full-high'   => 'options/place_full_below_nav',
+		'full-low'    => 'options/place_full_below_content',
+		'full-bottom' => 'options/place_full_below_footer',
 
-		'main-top' => 'place_main_top',
-		'main-high' => 'place_main_below_title',
-		'main-low' => 'place_main_below_lists',
-		'main-bottom' => 'place_main_bottom',
+		'main-top'    => 'options/place_main_top',
+		'main-high'   => 'options/place_main_below_title',
+		'main-low'    => 'options/place_main_below_lists',
+		'main-bottom' => 'options/place_main_bottom',
 
-		'side-top' => 'place_side_top',
-		'side-high' => 'place_side_below_sidebar',
-		'side-low' => 'place_side_below_categories',
-		'side-bottom' => 'place_side_last',
+		'side-top'    => 'options/place_side_top',
+		'side-high'   => 'options/place_side_below_sidebar',
+		'side-low'    => 'options/place_side_below_categories',
+		'side-bottom' => 'options/place_side_last',
 	);
 
 
@@ -148,6 +144,9 @@ class qa_widget_anywhere
 			$widget = qa_db_read_one_assoc($result);
 		}
 
+		// set up position list
+		foreach ( $this->positionlangs as $pos=>$langkey )
+			$this->positionlangs[$pos] = strpos($langkey, 'options/') === 0 ? qa_lang_html($langkey) : $langkey;
 		$sel_position = empty($widget['position']) ? null : @$this->positionlangs[$widget['position']];
 
 		// set up page (template) list

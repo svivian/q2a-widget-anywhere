@@ -8,17 +8,35 @@ class qa_widget_anywhere
 	private $pluginkey = 'widgetanyw';
 	private $opt = 'widgetanyw_active';
 
+	// NOTE: most of the old positions have been removed in favour of the standard Q2A positions
 	private $positionlangs = array(
-		'head-tag' => 'End of &lt;head&gt; tag',
-		'header-before' => 'Before header',
-		'header-after' => 'After header',
-		'q-item-before' => 'Before question text',
+		'head-tag' => 'Inside &lt;HEAD&gt; tag',
+		// 'header-before' => 'Before header',
+		// 'header-after' => 'After header',
+		// 'title-after' => 'After page title (&lt;H1&gt;)',
+		// 'q-item-before' => 'Before question text',
 		'q-item-after' => 'After question text',
 		// 'a-list-after-first' => 'After first answer',
-		'a-list-after' => 'After answer list',
-		'sidepanel-top' => 'Side panel - top',
-		'sidepanel-bottom' => 'Side panel - bottom',
+		// 'a-list-after' => 'After answer list',
+		// 'sidepanel-top' => 'Side panel - top',
+		// 'sidepanel-bottom' => 'Side panel - bottom',
+
+		'full-top' => 'place_full_top',
+		'full-high' => 'place_full_below_nav',
+		'full-low' => 'place_full_below_content',
+		'full-bottom' => 'place_full_below_footer',
+
+		'main-top' => 'place_main_top',
+		'main-high' => 'place_main_below_title',
+		'main-low' => 'place_main_below_lists',
+		'main-bottom' => 'place_main_bottom',
+
+		'side-top' => 'place_side_top',
+		'side-high' => 'place_side_below_sidebar',
+		'side-low' => 'place_side_below_categories',
+		'side-bottom' => 'place_side_last',
 	);
+
 
 	// copied from qa-page-admin-widgets.php
 	private $templatelangkeys = array(
@@ -130,7 +148,7 @@ class qa_widget_anywhere
 			$widget = qa_db_read_one_assoc($result);
 		}
 
-		$sel_position = empty($widget['position']) ? null : $this->positionlangs[$widget['position']];
+		$sel_position = empty($widget['position']) ? null : @$this->positionlangs[$widget['position']];
 
 		// set up page (template) list
 		$sel_pages = explode( ',', $widget['pages'] );

@@ -8,18 +8,25 @@ class qa_html_theme_layer extends qa_html_theme_base
 
 	/* Positions:
 		head-tag
-		header-before
-		header-after
-		q-item-before
 		q-item-after
-		*a-list-after-first
-		a-list-after
+		full-top, full-high, full-low, full-bottom
+		main-top, main-high, main-low, main-bottom
+		side-top, side-high, side-low, side-bottom
+
+		[old]
+		header-before    -> full-top
+		header-after     -> full-high
+		q-item-before    -> main-high
+		a-list-after     -> main-low
+		sidepanel-top    -> side-top
+		sidepanel-bottom -> side-bottom
 	*/
 
 	function doctype()
 	{
 		if ( qa_opt($this->opt) === '1' )
 		{
+			// fetch all widgets into a basic list [TODO: maybe use position as array key]
 			$sql = 'SELECT * FROM ^'.$this->pluginkey.' ORDER BY ordering';
 			$widgets = qa_db_read_all_assoc( qa_db_query_sub($sql) );
 
@@ -34,6 +41,13 @@ class qa_html_theme_layer extends qa_html_theme_base
 		parent::doctype();
 	}
 
+	// most widgets now use a built-in location
+	function widgets( $region, $place )
+	{
+		parent::widgets( $region, $place );
+		$this->_output_widget( $region.'-'.$place );
+	}
+
 	function head_custom()
 	{
 		parent::head_custom();
@@ -42,54 +56,16 @@ class qa_html_theme_layer extends qa_html_theme_base
 		$this->_output_widget('head-tag');
 	}
 
-	function header()
-	{
-		// position before header
-		$this->_output_widget('header-before');
-
-		parent::header();
-
-		// position after header
-		$this->_output_widget('header-after');
-	}
-
 	function q_view($q_view)
 	{
-		// position before question
-		$this->_output_widget('q-item-before');
+		// position before question [replaced by `title-after`]
+		// $this->_output_widget('q-item-before');
 
 		parent::q_view($q_view);
 
 		// position after question
 		$this->_output_widget('q-item-after');
 	}
-
-	function a_list($a_list)
-	{
-		// TODO: position after first answer?
-
-		parent::a_list($a_list);
-
-		// position after all answers
-		$this->_output_widget('a-list-after');
-	}
-
-	function sidebar()
-	{
-		// position at top of sidepanel
-		$this->_output_widget('sidepanel-top');
-
-		parent::sidebar();
-	}
-
-	function feed()
-	{
-		parent::feed();
-
-		// position at bottom of sidepanel
-		$this->_output_widget('sidepanel-bottom');
-	}
-
 
 	// outputs all widgets for specified position
 	private function _output_widget( $pos )
@@ -101,11 +77,11 @@ class qa_html_theme_layer extends qa_html_theme_base
 		}
 	}
 
+	
 
 	// testing function
 	private function _debug($s)
 	{
 		echo '<pre align="left">' . print_r($s,true) . '</pre>';
 	}
-
 }

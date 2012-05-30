@@ -65,6 +65,11 @@ class qa_widget_anywhere
 		$this->directory = $directory;
 		$this->urltoroot = $urltoroot;
 		$this->anchor = md5('page/Widget Anywhere');
+
+		// set up position list
+		foreach ( $this->positionlangs as $pos=>$langkey )
+			$this->positionlangs[$pos] = strpos($langkey, 'options/') === 0 ? qa_lang_html($langkey) : $langkey;
+
 	}
 
 	function match_request( $request )
@@ -144,9 +149,6 @@ class qa_widget_anywhere
 			$widget = qa_db_read_one_assoc($result);
 		}
 
-		// set up position list
-		foreach ( $this->positionlangs as $pos=>$langkey )
-			$this->positionlangs[$pos] = strpos($langkey, 'options/') === 0 ? qa_lang_html($langkey) : $langkey;
 		$sel_position = empty($widget['position']) ? null : @$this->positionlangs[$widget['position']];
 
 		// set up page (template) list
@@ -260,7 +262,8 @@ class qa_widget_anywhere
 		foreach ( $widgets as $w )
 		{
 			$param = array( 'editid' => $w['id'] );
-			$posit = $this->positionlangs[$w['position']];
+			$p = $w['position'];
+			$posit = isset($this->positionlangs[$p]) ? $this->positionlangs[$p] : '[none]';
 			$custom .= '<li>';
 			$custom .= '<b>' . $w['title'] . '</b>';
 			$custom .= ' - <a href="' . qa_path($urlbase, $param) . '">' . $posit . '</a>';

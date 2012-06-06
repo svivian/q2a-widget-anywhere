@@ -1,6 +1,6 @@
 <?php
 /*
-	Question2Answer Widget Anywhere plugin, v1.0
+	Question2Answer Widget Anywhere plugin, v1.1
 	License: http://www.gnu.org/licenses/gpl.html
 */
 
@@ -116,8 +116,6 @@ class qa_widget_anywhere
 		$saved_msg = null;
 		$editid = qa_get('editid');
 
-		// $qa_content['custom'] .= qa_post_text('dodelete');
-
 		if ( qa_post_text('dodelete') )
 		{
 			$this->delete_widget();
@@ -170,7 +168,7 @@ class qa_widget_anywhere
 				'title' => array(
 					'label' => 'Title',
 					'tags' => 'NAME="wtitle"',
-					'value' => $widget['title'],
+					'value' => qa_html($widget['title']),
 				),
 
 				'position' => array(
@@ -191,14 +189,14 @@ class qa_widget_anywhere
 					'type' => 'number',
 					'label' => 'Order',
 					'tags' => 'NAME="wordering"',
-					'value' => $widget['ordering'],
+					'value' => qa_html($widget['ordering']),
 				),
 
 				'content' => array(
 					'type' => 'textarea',
 					'label' => 'Content (HTML)',
 					'tags' => 'NAME="wcontent"',
-					'value' => $widget['content'],
+					'value' => qa_html($widget['content']),
 					'rows' => 12,
 				),
 			),
@@ -267,7 +265,6 @@ class qa_widget_anywhere
 			$custom .= '<li>';
 			$custom .= '<b>' . $w['title'] . '</b>';
 			$custom .= ' - <a href="' . qa_path($urlbase, $param) . '">' . $posit . '</a>';
-			// $custom .= ' - <a style="font-size:11px;color:#a00">Delete widget</a>';
 			$custom .= '</li>'."\n";
 		}
 		$custom .= '</ul>'."\n";
@@ -285,7 +282,6 @@ class qa_widget_anywhere
 			),
 		);
 	}
-
 
 
 	private function save_widget()
@@ -330,13 +326,6 @@ class qa_widget_anywhere
 		$wid = qa_post_text('wid');
 		$sql = 'DELETE FROM ^'.$this->pluginkey.' WHERE id=#';
 		return qa_db_query_sub( $sql, $wid );
-	}
-
-
-	// testing function
-	private function _debug($s)
-	{
-		echo '<pre align="left">' . print_r($s,true) . '</pre>';
 	}
 
 }

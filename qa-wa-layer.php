@@ -1,6 +1,6 @@
 <?php
 /*
-	Question2Answer Widget Anywhere plugin, v1.0
+	Question2Answer Widget Anywhere plugin, v1.1
 	License: http://www.gnu.org/licenses/gpl.html
 */
 
@@ -30,7 +30,7 @@ class qa_html_theme_layer extends qa_html_theme_base
 	{
 		if ( qa_opt($this->opt) === '1' )
 		{
-			// fetch all widgets into a basic list [TODO: maybe use position as array key]
+			// fetch all widgets into a basic list
 			$sql = 'SELECT * FROM ^'.$this->pluginkey.' ORDER BY ordering';
 			$widgets = qa_db_read_all_assoc( qa_db_query_sub($sql) );
 
@@ -81,11 +81,4 @@ class qa_html_theme_layer extends qa_html_theme_base
 		}
 	}
 
-
-
-	// testing function
-	private function _debug($s)
-	{
-		echo '<pre align="left">' . print_r($s,true) . '</pre>';
-	}
 }

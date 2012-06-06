@@ -83,7 +83,6 @@ class qa_widget_anywhere
 
 		if ( !in_array($tablename, $tableslc) )
 		{
-			// TODO: index position, ordering and any other necessary fields
 			return 'CREATE TABLE IF NOT EXISTS ^'.$this->pluginkey.' ( '.
 				'`id` smallint(5) unsigned NOT NULL AUTO_INCREMENT, '.
 				'`title` varchar(30) NOT NULL, '.
@@ -91,7 +90,8 @@ class qa_widget_anywhere
 				'`position` varchar(30) NOT NULL, '.
 				'`ordering` smallint(5) unsigned NOT NULL, '.
 				'`content` text NOT NULL, '.
-				'PRIMARY KEY (`id`)'.
+				'PRIMARY KEY (`id`), '.
+				'KEY `position` (`position`,`ordering`) '.
 			' ) ENGINE=InnoDB DEFAULT CHARSET=utf8';
 		}
 

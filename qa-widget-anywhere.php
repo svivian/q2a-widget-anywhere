@@ -150,9 +150,22 @@ class qa_widget_anywhere
 		$sel_position = empty($widget['position']) ? null : @$this->positionlangs[$widget['position']];
 
 		// set up page (template) list
-		$sel_pages = explode( ',', $widget['pages'] );
-		$chkd = in_array('all', $sel_pages) ? 'checked' : '';
-		$pages_html = '<label><input type="checkbox" name="wpages_all" ' . $chkd . '> ' . qa_lang_html('admin/widget_all_pages') . '</label><br><br>';
+		$widget_pages = explode( ',', $widget['pages'] );
+
+		$sel_pages = array();
+		$custom_pages = array();
+		foreach ( $widget_pages as $page )
+		{
+			if ( strpos($page, 'custom:') === 0 )
+				$custom_pages[] = substr($page, 7);
+			else
+				$sel_pages[] = $page;
+		}
+
+		// $chkd = in_array('all', $sel_pages) ? 'checked' : '';
+		// $pages_html = '<label><input type="checkbox" name="wpages_all" ' . $chkd . '> ' . qa_lang_html('admin/widget_all_pages') . '</label><br><br>';
+
+		$pages_html = '';
 		foreach ( $this->templatelangkeys as $tmpl=>$langkey )
 		{
 			$chkd = in_array($tmpl, $sel_pages) ? 'checked' : '';
@@ -161,7 +174,7 @@ class qa_widget_anywhere
 
 		$qa_content['form'] = array(
 			'tags' => 'METHOD="POST" ACTION="'.qa_self_html().'"',
-			'style' => 'wide',
+			'style' => 'tall',
 			'ok' => $saved_msg,
 
 			'fields' => array(
@@ -179,10 +192,34 @@ class qa_widget_anywhere
 					'value' => $sel_position,
 				),
 
+				'all_pages' => array(
+					'type' => 'checkbox',
+					'id' => 'tb_pages_all',
+					'label' => qa_lang_html('admin/widget_all_pages'),
+					'tags' => 'NAME="wpages_all" ID="wpages_all"',
+					'value' => in_array('all', $sel_pages),
+				),
+
 				'pages' => array(
 					'type' => 'custom',
-					'label' => 'Pages',
+					'id' => 'tb_pages_list',
+					'label' => qa_lang_html('admin/widget_pages_explanation'),
 					'html' => $pages_html,
+				),
+
+				'show_custom_pages' => array(
+					'type' => 'checkbox',
+					'id' => 'tb_show_custom_pages',
+					'label' => 'Show on custom page(s)',
+					'tags' => 'NAME="cb_custom_pages" ID="cb_custom_pages"',
+					'value' => count($custom_pages) > 0,
+				),
+				'custom_pages' => array(
+					'id' => 'tb_custom_pages',
+					'label' => 'Page slugs',
+					'tags' => 'NAME="wpages_custom"',
+					'value' => qa_html( implode(',', $custom_pages) ),
+					'note' => 'Separate multiple page slugs (URL fragments) with commas, e.g. <code>custom-page,other-page</code>',
 				),
 
 				'ordering' => array(
@@ -228,6 +265,12 @@ class qa_widget_anywhere
 				'type' => 'checkbox',
 			);
 		}
+
+		qa_set_display_rules($qa_content, array(
+			'tb_pages_list' => '!wpages_all',
+			'tb_show_custom_pages' => '!wpages_all',
+			'tb_custom_pages' => 'cb_custom_pages && !wpages_all',
+		));
 
 		return $qa_content;
 	}
@@ -302,6 +345,15 @@ class qa_widget_anywhere
 			{
 				if ( qa_post_text('wpages_'.$key) )
 					$pages[] = $key;
+			}
+
+			if ( qa_post_text('cb_custom_pages') )
+			{
+				$wpages_custom = explode( ',', qa_post_text('wpages_custom') );
+				foreach ( $wpages_custom as $cp )
+				{
+					$pages[] = 'custom:'.$cp;
+				}
 			}
 		}
 		$widget['pages'] = implode( ',', $pages );

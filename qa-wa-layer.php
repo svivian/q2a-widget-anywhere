@@ -37,7 +37,11 @@ class qa_html_theme_layer extends qa_html_theme_base
 			foreach ( $widgets as $wid )
 			{
 				$wid['pages'] = explode(',', @$wid['pages']);
-				if ( $wid['pages'][0] == 'all' || in_array( $this->template, $wid['pages'] ) )
+				$show_all = $wid['pages'][0] == 'all';
+				$show_tmpl = in_array( $this->template, $wid['pages'] );
+				$show_custom = $this->template == 'custom' && in_array( 'custom:'.$this->request, $wid['pages'] );
+
+				if ( $show_all || $show_tmpl || $show_custom )
 					$this->widgets[] = $wid;
 			}
 		}

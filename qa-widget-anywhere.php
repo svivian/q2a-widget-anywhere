@@ -1,6 +1,6 @@
 <?php
 /*
-	Question2Answer Widget Anywhere plugin, v1.1
+	Question2Answer Widget Anywhere plugin, v1.2
 	License: http://www.gnu.org/licenses/gpl.html
 */
 

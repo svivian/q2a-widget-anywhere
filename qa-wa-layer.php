@@ -6,9 +6,9 @@
 
 class qa_html_theme_layer extends qa_html_theme_base
 {
-	private $widgets = array();
-	private $pluginkey = 'widgetanyw';
-	private $opt = 'widgetanyw_active';
+	private $wanyw_widgets = array();
+	private $wanyw_key = 'widgetanyw';
+	private $wanyw_opt = 'widgetanyw_active';
 
 	/* Positions:
 		head-tag
@@ -28,10 +28,10 @@ class qa_html_theme_layer extends qa_html_theme_base
 
 	function doctype()
 	{
-		if ( qa_opt($this->opt) === '1' )
+		if ( qa_opt($this->wanyw_opt) === '1' )
 		{
 			// fetch all widgets into a basic list
-			$sql = 'SELECT * FROM ^'.$this->pluginkey.' ORDER BY ordering';
+			$sql = 'SELECT * FROM ^'.$this->wanyw_key.' ORDER BY ordering';
 			$widgets = qa_db_read_all_assoc( qa_db_query_sub($sql) );
 
 			foreach ( $widgets as $wid )
@@ -42,7 +42,7 @@ class qa_html_theme_layer extends qa_html_theme_base
 				$show_custom = in_array( 'custom:'.$this->request, $wid['pages'] );
 
 				if ( $show_all || $show_tmpl || $show_custom )
-					$this->widgets[] = $wid;
+					$this->wanyw_widgets[] = $wid;
 			}
 		}
 
@@ -78,7 +78,7 @@ class qa_html_theme_layer extends qa_html_theme_base
 	// outputs all widgets for specified position
 	private function _output_widget( $pos )
 	{
-		foreach ( $this->widgets as $wid )
+		foreach ( $this->wanyw_widgets as $wid )
 		{
 			if ( $wid['position'] === $pos )
 				$this->output( $wid['content'] );

@@ -103,7 +103,7 @@ class qa_widget_anywhere
 	function process_request( $request )
 	{
 		// double check we are admin
-		if ( qa_get_logged_in_level() < QA_USER_LEVEL_SUPER )
+		if ( qa_get_logged_in_level() < QA_USER_LEVEL_ADMIN )
 			return;
 
 		if ( qa_clicked('docancel') )

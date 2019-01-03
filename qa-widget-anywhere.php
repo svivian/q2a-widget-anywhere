@@ -11,6 +11,8 @@ class qa_widget_anywhere
 	private $pluginkey = 'widgetanyw';
 	private $opt = 'widgetanyw_active';
 
+	private $titleLength = 30;
+
 	// NOTE: most of the old positions have been removed in favour of the standard Q2A positions
 	private $positionlangs = [
 		'head-tag' => 'Inside &lt;HEAD&gt; tag',
@@ -81,7 +83,7 @@ class qa_widget_anywhere
 		if (!in_array($tablename, $tableslc)) {
 			return 'CREATE TABLE IF NOT EXISTS ^'.$this->pluginkey.' ( '.
 				'`id` smallint(5) unsigned NOT NULL AUTO_INCREMENT, '.
-				'`title` varchar(30) NOT NULL, '.
+				'`title` varchar(' . $this->titleLength . ') NOT NULL, '.
 				'`pages` varchar(800) NOT NULL, '.
 				'`position` varchar(30) NOT NULL, '.
 				'`ordering` smallint(5) unsigned NOT NULL, '.
@@ -112,14 +114,16 @@ class qa_widget_anywhere
 
 		$saved_msg = null;
 		$editid = qa_get('editid');
+		$errors = [];
 
 		if (qa_post_text('dodelete')) {
 			$this->delete_widget();
 			qa_redirect('admin/plugins');
 		} elseif (qa_clicked('save_button')) {
 			// save widget
-			$widget = $this->save_widget();
-			$saved_msg = 'Widget saved.';
+			$widget = $this->save_widget($errors);
+			if (empty($errors))
+				$saved_msg = 'Widget saved.';
 		} elseif (empty($editid)) {
 			// display blank form
 			$widget = [
@@ -168,6 +172,7 @@ class qa_widget_anywhere
 					'label' => 'Title',
 					'tags' => 'NAME="wtitle"',
 					'value' => qa_html($widget['title']),
+					'error' => qa_html(@$errors['title']),
 				],
 
 				'position' => [
@@ -307,14 +312,15 @@ class qa_widget_anywhere
 		];
 	}
 
-	private function save_widget()
+	private function save_widget(&$errors)
 	{
-		$widget = [];
-		$widget['id'] = qa_post_text('wid');
-		$widget['title'] = qa_post_text('wtitle');
-		$widget['position'] = qa_post_text('wposition');
-		$widget['ordering'] = qa_post_text('wordering');
-		$widget['content'] = qa_post_text('wcontent');
+		$widget = [
+			'id' => qa_post_text('wid'),
+			'title' => qa_post_text('wtitle'),
+			'position' => qa_post_text('wposition'),
+			'ordering' => qa_post_text('wordering'),
+			'content' => qa_post_text('wcontent'),
+		];
 
 		$pages = [];
 		if (qa_post_text('wpages_all')) {
@@ -333,6 +339,11 @@ class qa_widget_anywhere
 			}
 		}
 		$widget['pages'] = implode(',', $pages);
+
+		if (strlen($widget['title']) > $this->titleLength) {
+			$errors['title'] = 'Title is too long (max ' . $this->titleLength . ' characters)';
+			return $widget;
+		}
 
 		if ($widget['id'] === '0') {
 			$sql = 'INSERT INTO ^'.$this->pluginkey.' (id, title, pages, position, ordering, content) VALUES (0, $, $, $, #, $)';

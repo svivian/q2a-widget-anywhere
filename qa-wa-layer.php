@@ -16,32 +16,22 @@ class qa_html_theme_layer extends qa_html_theme_base
 		full-top, full-high, full-low, full-bottom
 		main-top, main-high, main-low, main-bottom
 		side-top, side-high, side-low, side-bottom
-
-		[old]
-		header-before    -> full-top
-		header-after     -> full-high
-		q-item-before    -> main-high
-		a-list-after     -> main-low
-		sidepanel-top    -> side-top
-		sidepanel-bottom -> side-bottom
 	*/
 
-	function doctype()
+	public function doctype()
 	{
-		if ( qa_opt($this->wanyw_opt) === '1' )
-		{
+		if (qa_opt($this->wanyw_opt) === '1') {
 			// fetch all widgets into a basic list
 			$sql = 'SELECT * FROM ^'.$this->wanyw_key.' ORDER BY ordering';
-			$widgets = qa_db_read_all_assoc( qa_db_query_sub($sql) );
+			$widgets = qa_db_read_all_assoc(qa_db_query_sub($sql));
 
-			foreach ( $widgets as $wid )
-			{
+			foreach ($widgets as $wid) {
 				$wid['pages'] = explode(',', @$wid['pages']);
 				$show_all = $wid['pages'][0] == 'all';
-				$show_tmpl = in_array( $this->template, $wid['pages'] );
-				$show_custom = in_array( 'custom:'.$this->request, $wid['pages'] );
+				$show_tmpl = in_array($this->template, $wid['pages']);
+				$show_custom = in_array('custom:'.$this->request, $wid['pages']);
 
-				if ( $show_all || $show_tmpl || $show_custom )
+				if ($show_all || $show_tmpl || $show_custom)
 					$this->wanyw_widgets[] = $wid;
 			}
 		}
@@ -50,39 +40,34 @@ class qa_html_theme_layer extends qa_html_theme_base
 	}
 
 	// most widgets now use a built-in location
-	function widgets( $region, $place )
+	public function widgets($region, $place)
 	{
-		parent::widgets( $region, $place );
-		$this->_output_widget( $region.'-'.$place );
+		parent::widgets($region, $place);
+		$this->wa_output_widget($region.'-'.$place);
 	}
 
-	function head_custom()
+	public function head_custom()
 	{
 		parent::head_custom();
 
 		// position inside <head> tag
-		$this->_output_widget('head-tag');
+		$this->wa_output_widget('head-tag');
 	}
 
-	function q_view($q_view)
+	public function q_view($q_view)
 	{
-		// position before question [replaced by `title-after`]
-		// $this->_output_widget('q-item-before');
-
 		parent::q_view($q_view);
 
 		// position after question
-		$this->_output_widget('q-item-after');
+		$this->wa_output_widget('q-item-after');
 	}
 
 	// outputs all widgets for specified position
-	private function _output_widget( $pos )
+	private function wa_output_widget($pos)
 	{
-		foreach ( $this->wanyw_widgets as $wid )
-		{
-			if ( $wid['position'] === $pos )
-				$this->output( $wid['content'] );
+		foreach ($this->wanyw_widgets as $wid) {
+			if ($wid['position'] === $pos)
+				$this->output($wid['content']);
 		}
 	}
-
 }

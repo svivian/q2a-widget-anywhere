@@ -8,7 +8,6 @@ class qa_widget_anywhere
 {
 	private $directory;
 	private $urltoroot;
-	private $anchor;
 	private $pluginkey = 'widgetanyw';
 	private $opt = 'widgetanyw_active';
 
@@ -64,7 +63,6 @@ class qa_widget_anywhere
 	{
 		$this->directory = $directory;
 		$this->urltoroot = $urltoroot;
-		$this->anchor = md5('page/Widget Anywhere');
 
 		// set up position list
 		foreach ( $this->positionlangs as $pos=>$langkey )
@@ -111,7 +109,8 @@ class qa_widget_anywhere
 
 		$qa_content = qa_content_prepare();
 		$qa_content['title'] = 'Widget Anywhere';
-		$qa_content['custom'] = '<p><a href="' . qa_path('admin/plugins').'#'.qa_html($this->anchor) . '">&laquo; back to plugin options</a></p>';
+		$optionsUrl = qa_admin_module_options_path('page', 'Widget Anywhere');
+		$qa_content['custom'] = '<p><a href="' . $optionsUrl . '">&laquo; back to plugin options</a></p>';
 
 		$saved_msg = null;
 		$editid = qa_get('editid');

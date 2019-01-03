@@ -305,8 +305,8 @@ class qa_widget_anywhere
 			$p = $w['position'];
 			$posit = isset($this->positionlangs[$p]) ? $this->positionlangs[$p] : '[none]';
 			$custom .= '<li>';
-			$custom .= '<b>' . $w['title'] . '</b>';
-			$custom .= ' - <a href="' . qa_path($urlbase, $param) . '">' . $posit . '</a>';
+			$custom .= '<b>' . qa_html($w['title']) . '</b>';
+			$custom .= ' - <a href="' . qa_path($urlbase, $param) . '">' . qa_html($posit) . '</a>';
 			$custom .= '</li>'."\n";
 		}
 		$custom .= '</ul>'."\n";

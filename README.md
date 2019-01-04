@@ -7,6 +7,14 @@ A plugin for [Question2Answer](http://www.question2answer.org) that allows the p
 Suggestions/bugs can be reported to me here on Github or at [this post on Question2Answer](http://www.question2answer.org/qa/15066/)
 
 
+Pay What You Like
+-------------------------------------------------
+
+Most of my code is released under the open source GPLv3 license, and provided with a 'Pay What You Like' approach. Feel free to download and modify the code to suit your needs, and I hope you value it enough to make a small donation - any amount is welcome.
+
+### [Donate here](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=4R5SHBNM3UDLU&source=url)
+
+
 Installation & Usage
 -------------------------------------------------
 
@@ -19,11 +27,3 @@ To show a module across every page, tick the first box. Note that certain positi
 Widgets can also be added on custom pages: tick 'Show on custom page(s)' and enter the page slugs (URL fragments) in the field.
 
 To edit a module, click the appropriate link from the plugin options. Make the required changes and save. To delete a module, go to its edit page, tick the "Delete widget" checkbox and save.
-
-
-Pay What You Like
--------------------------------------------------
-
-Most of my code is released under the open source GPL license, and provided with a 'Pay What You Like' approach. Feel free to download and modify the plugins/themes to suit your needs, and I hope you value them enough to make a small donation of a few dollars or more.
-
-### [Donate here](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=4R5SHBNM3UDLU)

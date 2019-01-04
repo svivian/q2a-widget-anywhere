@@ -1,7 +1,8 @@
 <?php
 /*
 	Question2Answer Widget Anywhere plugin
-	License: http://www.gnu.org/licenses/gpl.html
+	Copyright (C) 2012 Scott Vivian
+	License: https://www.gnu.org/licenses/gpl.html
 */
 
 class qa_html_theme_layer extends qa_html_theme_base

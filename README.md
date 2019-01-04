@@ -18,12 +18,16 @@ Most of my code is released under the open source GPLv3 license, and provided wi
 Installation & Usage
 -------------------------------------------------
 
-1. Download and extract the files to your plugins folder (e.g. `qa-plugins/widget-anywhere`).
-2. In Q2A go to Admin > Plugins and click the database initialization link.
-3. In the plugin options, click 'Add new widget' to create a module. Enter a title (this is not displayed on the front-end), the position, pages to appear on, ordering (relative to other WA modules) and the HTML content. Anything is allowed, including scripts.
+1. Download and extract the files to your Q2A plugins folder (e.g. `qa-plugin/widget-anywhere`). Check the [releases page](https://github.com/svivian/q2a-tagging-tools/releases) for the latest official version.
 
-To show a module across every page, tick the first box. Note that certain positions (e.g. 'After question text') are not available on all pages.
+2. If your site uses a different language, copy `qa-wa-lang-default.php` to a new file with the required country code (e.g. `qa-wa-lang-de.php` for German) and edit the phrases for your language.
 
-Widgets can also be added on custom pages: tick 'Show on custom page(s)' and enter the page slugs (URL fragments) in the field.
+3. In Q2A go to Admin > Plugins, enable the plugin and run the database initialization.
 
-To edit a module, click the appropriate link from the plugin options. Make the required changes and save. To delete a module, go to its edit page, tick the "Delete widget" checkbox and save.
+4. In the plugin options, click 'Add new widget' to create a module. Enter a title (this is for your reference and is not displayed on the front-end), the position, pages to appear on, ordering (relative to other WA modules) and the HTML content. Anything is allowed, including scripts.
+
+5. To edit a module, click the appropriate link from the plugin options. Make the required changes and save. To delete a module, go to its edit page, tick the "Delete widget" checkbox and save.
+
+Widgets can be added on custom pages: tick 'Show on custom page(s)' and enter the page slugs (URL fragments) in the field. Also note that certain positions (e.g. 'After question text') are not available on all pages.
+
+**Make sure the HTML syntax is correct before saving!** If you are missing closing tags (especially for `<script>` and `<style>`) you may end up making your site unusable. If this happens you'll need to edit the database manually (the `qa_widgetanyw` table) to fix the HTML.

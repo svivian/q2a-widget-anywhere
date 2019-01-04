@@ -2,12 +2,13 @@
 	"name": "Widget Anywhere",
 	"uri": "https://github.com/svivian/q2a-widget-anywhere",
 	"description": "Add custom HTML on any page(s) in a variety of locations. Useful for Google Adsense, Analytics, adding special instructions for asking questions, and so on.",
-	"version": "1.4.0",
-	"date": "2019-01-03",
+	"version": "1.4.1",
+	"date": "2019-01-04",
 	"author": "Scott Vivian",
 	"author_uri": "http://codelair.com",
 	"license": "GPLv3",
 	"update_uri": "https://raw.githubusercontent.com/svivian/q2a-widget-anywhere/master/metadata.json",
 	"min_q2a": "1.7",
-	"min_php": "5.4"
+	"min_php": "5.4",
+	"load_order": "after_db_init"
 }

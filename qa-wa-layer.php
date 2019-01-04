@@ -9,7 +9,6 @@ class qa_html_theme_layer extends qa_html_theme_base
 {
 	private $wanyw_widgets = array();
 	private $wanyw_key = 'widgetanyw';
-	private $wanyw_opt = 'widgetanyw_active';
 
 	/* Positions:
 		head-tag
@@ -19,25 +18,26 @@ class qa_html_theme_layer extends qa_html_theme_base
 		side-top, side-high, side-low, side-bottom
 	*/
 
-	public function doctype()
+	public function initialize()
 	{
-		if (qa_opt($this->wanyw_opt) === '1') {
-			// fetch all widgets into a basic list
-			$sql = 'SELECT * FROM ^'.$this->wanyw_key.' ORDER BY ordering';
-			$widgets = qa_db_read_all_assoc(qa_db_query_sub($sql));
+		// fetch all widgets into a basic list
+		$sql = 'SELECT * FROM ^'.$this->wanyw_key.' ORDER BY ordering';
+		$widgets = qa_db_read_all_assoc(qa_db_query_sub($sql));
 
-			foreach ($widgets as $wid) {
-				$wid['pages'] = explode(',', @$wid['pages']);
-				$show_all = $wid['pages'][0] == 'all';
-				$show_tmpl = in_array($this->template, $wid['pages']);
-				$show_custom = in_array('custom:'.$this->request, $wid['pages']);
+		foreach ($widgets as $widget) {
+			if (strlen($widget['pages']) === 0)
+				continue;
 
-				if ($show_all || $show_tmpl || $show_custom)
-					$this->wanyw_widgets[] = $wid;
-			}
+			$widget['pages'] = explode(',', $widget['pages']);
+			$show_all = $widget['pages'][0] == 'all';
+			$show_tmpl = in_array($this->template, $widget['pages']);
+			$show_custom = in_array('custom:'.$this->request, $widget['pages']);
+
+			if ($show_all || $show_tmpl || $show_custom)
+				$this->wanyw_widgets[] = $widget;
 		}
 
-		parent::doctype();
+		parent::initialize();
 	}
 
 	// most widgets now use a built-in location
@@ -66,9 +66,9 @@ class qa_html_theme_layer extends qa_html_theme_base
 	// outputs all widgets for specified position
 	private function wa_output_widget($pos)
 	{
-		foreach ($this->wanyw_widgets as $wid) {
-			if ($wid['position'] === $pos)
-				$this->output($wid['content']);
+		foreach ($this->wanyw_widgets as $widget) {
+			if ($widget['position'] === $pos)
+				$this->output($widget['content']);
 		}
 	}
 }

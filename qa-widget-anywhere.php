@@ -10,28 +10,26 @@ class qa_widget_anywhere
 	private $directory;
 	private $urltoroot;
 	private $pluginkey = 'widgetanyw';
-	private $opt = 'widgetanyw_active';
 
 	private $titleLength = 30;
 
-	// NOTE: most of the old positions have been removed in favour of the standard Q2A positions
 	private $positionlangs = [
-		'head-tag' => 'Inside &lt;HEAD&gt; tag',
-		'q-item-after' => 'After question text',
+		// custom positions
+		'head-tag' => 'widgetanywhere/place_head',
+		'q-item-after' => 'widgetanywhere/place_after_q',
 
-		'full-top'    => 'options/place_full_top',
-		'full-high'   => 'options/place_full_below_nav',
-		'full-low'    => 'options/place_full_below_content',
+		// standard Q2A positions
+		'full-top' => 'options/place_full_top',
+		'full-high' => 'options/place_full_below_nav',
+		'full-low' => 'options/place_full_below_content',
 		'full-bottom' => 'options/place_full_below_footer',
-
-		'main-top'    => 'options/place_main_top',
-		'main-high'   => 'options/place_main_below_title',
-		'main-low'    => 'options/place_main_below_lists',
+		'main-top' => 'options/place_main_top',
+		'main-high' => 'options/place_main_below_title',
+		'main-low' => 'options/place_main_below_lists',
 		'main-bottom' => 'options/place_main_bottom',
-
-		'side-top'    => 'options/place_side_top',
-		'side-high'   => 'options/place_side_below_sidebar',
-		'side-low'    => 'options/place_side_below_categories',
+		'side-top' => 'options/place_side_top',
+		'side-high' => 'options/place_side_below_sidebar',
+		'side-low' => 'options/place_side_below_categories',
 		'side-bottom' => 'options/place_side_last',
 	];
 
@@ -68,7 +66,7 @@ class qa_widget_anywhere
 
 		// set up position list
 		foreach ($this->positionlangs as $pos => $langkey) {
-			$this->positionlangs[$pos] = strpos($langkey, 'options/') === 0 ? qa_lang_html($langkey) : $langkey;
+			$this->positionlangs[$pos] = qa_lang_html($langkey);
 		}
 	}
 
@@ -95,7 +93,6 @@ class qa_widget_anywhere
 		}
 
 		// we're already set up
-		qa_opt($this->opt, '1');
 		return null;
 	}
 
@@ -109,9 +106,9 @@ class qa_widget_anywhere
 			qa_redirect('admin/plugins');
 
 		$qa_content = qa_content_prepare();
-		$qa_content['title'] = 'Widget Anywhere';
+		$qa_content['title'] = qa_lang_html('widgetanywhere/plugin_name');
 		$optionsUrl = qa_admin_module_options_path('page', 'Widget Anywhere');
-		$qa_content['custom'] = '<p><a href="' . $optionsUrl . '">&laquo; back to plugin options</a></p>';
+		$qa_content['custom'] = '<p><a href="' . $optionsUrl . '">&lsaquo; ' . qa_lang_html('widgetanywhere/link_options') . '</a></p>';
 
 		$saved_msg = null;
 		$editid = qa_get('editid');
@@ -124,7 +121,7 @@ class qa_widget_anywhere
 			// save widget
 			$widget = $this->save_widget($errors);
 			if (empty($errors))
-				$saved_msg = 'Widget saved.';
+				$saved_msg = qa_lang_html('widgetanywhere/alert_saved');
 		} elseif (empty($editid)) {
 			// display blank form
 			$widget = [
@@ -142,7 +139,8 @@ class qa_widget_anywhere
 			$widget = qa_db_read_one_assoc($result);
 		}
 
-		$sel_position = empty($widget['position']) ? null : @$this->positionlangs[$widget['position']];
+		$positionKey = isset($widget['position']) ? $widget['position'] : null;
+		$selectedPosition = isset($this->positionlangs[$positionKey]) ? $this->positionlangs[$positionKey] : null;
 
 		// set up page (template) list
 		$widget_pages = explode(',', $widget['pages']);
@@ -164,31 +162,31 @@ class qa_widget_anywhere
 		}
 
 		$qa_content['form'] = [
-			'tags' => 'METHOD="POST" ACTION="'.qa_self_html().'"',
+			'tags' => 'method="post" action="'.qa_self_html().'"',
 			'style' => 'tall',
 			'ok' => $saved_msg,
 
 			'fields' => [
 				'title' => [
-					'label' => 'Title',
-					'tags' => 'NAME="wtitle"',
+					'label' => qa_lang_html('widgetanywhere/label_title'),
+					'tags' => 'name="wtitle"',
 					'value' => qa_html($widget['title']),
-					'error' => qa_html(@$errors['title']),
+					'error' => isset($errors['title']) ? qa_html($errors['title']) : '',
 				],
 
 				'position' => [
 					'type' => 'select',
-					'label' => 'Position',
-					'tags' => 'NAME="wposition"',
+					'label' => qa_lang_html('admin/position'),
+					'tags' => 'name="wposition"',
 					'options' => $this->positionlangs,
-					'value' => $sel_position,
+					'value' => $selectedPosition,
 				],
 
 				'all_pages' => [
 					'type' => 'checkbox',
 					'id' => 'tb_pages_all',
 					'label' => qa_lang_html('admin/widget_all_pages'),
-					'tags' => 'NAME="wpages_all" ID="wpages_all"',
+					'tags' => 'name="wpages_all" ID="wpages_all"',
 					'value' => in_array('all', $sel_pages),
 				],
 
@@ -202,29 +200,29 @@ class qa_widget_anywhere
 				'show_custom_pages' => [
 					'type' => 'checkbox',
 					'id' => 'tb_show_custom_pages',
-					'label' => 'Show on custom page(s)',
-					'tags' => 'NAME="cb_custom_pages" ID="cb_custom_pages"',
+					'label' => qa_lang_html('widgetanywhere/label_custom'),
+					'tags' => 'name="cb_custom_pages" ID="cb_custom_pages"',
 					'value' => count($custom_pages) > 0,
 				],
 				'custom_pages' => [
 					'id' => 'tb_custom_pages',
-					'label' => 'Page slugs',
-					'tags' => 'NAME="wpages_custom"',
+					'label' => qa_lang_html('widgetanywhere/label_slugs'),
+					'tags' => 'name="wpages_custom"',
 					'value' => qa_html(implode(',', $custom_pages)),
-					'note' => 'Separate multiple page slugs (URL fragments) with commas, e.g. <code>custom-page,other-page</code>',
+					'note' => preg_replace('/`(.+?)`/', '<code>$1</code>', qa_lang_html('widgetanywhere/note_slugs')),
 				],
 
 				'ordering' => [
 					'type' => 'number',
-					'label' => 'Order',
-					'tags' => 'NAME="wordering"',
+					'label' => qa_lang_html('widgetanywhere/label_order'),
+					'tags' => 'name="wordering"',
 					'value' => qa_html($widget['ordering']),
 				],
 
 				'content' => [
 					'type' => 'textarea',
-					'label' => 'Content (HTML)',
-					'tags' => 'NAME="wcontent"',
+					'label' => qa_lang_html('widgetanywhere/label_content'),
+					'tags' => 'name="wcontent"',
 					'value' => qa_html($widget['content']),
 					'rows' => 12,
 				],
@@ -236,13 +234,13 @@ class qa_widget_anywhere
 
 			'buttons' => [
 				'save' => [
-					'tags' => 'NAME="save_button"',
-					'label' => 'Save widget',
+					'tags' => 'name="save_button"',
+					'label' => qa_lang_html('widgetanywhere/button_save'),
 					'value' => '1',
 				],
 
 				'cancel' => [
-					'tags' => 'NAME="docancel"',
+					'tags' => 'name="docancel"',
 					'label' => qa_lang_html('main/cancel_button'),
 				],
 			],
@@ -250,8 +248,8 @@ class qa_widget_anywhere
 
 		if ($widget['id'] > 0) {
 			$qa_content['form']['fields']['delete'] = [
-				'tags' => 'NAME="dodelete"',
-				'label' => 'Delete widget',
+				'tags' => 'name="dodelete"',
+				'label' => qa_lang_html('widgetanywhere/label_delete'),
 				'value' => 0,
 				'type' => 'checkbox',
 			];
@@ -268,20 +266,6 @@ class qa_widget_anywhere
 
 	public function admin_form(&$qa_content)
 	{
-		$saved_msg = null;
-
-		// link to set up plugin
-		if (qa_opt($this->opt) !== '1') {
-			return [
-				'fields' => [
-					[
-						'type' => 'custom',
-						'error' => 'Widget Anywhere is not set up yet. <a href="' . qa_path('install') . '">Run setup</a>',
-					],
-				],
-			];
-		}
-
 		// plugin is active, so show list of current widgets
 		$sql = 'SELECT id, title, pages, position FROM ^'.$this->pluginkey.' ORDER BY position, ordering';
 		$result = qa_db_query_sub($sql);
@@ -299,11 +283,9 @@ class qa_widget_anywhere
 			$custom .= '</li>'."\n";
 		}
 		$custom .= "</ul>\n";
-		$custom .= '<p><a href="' . qa_path($urlbase) . '">Add new widget</a></p>'."\n";
+		$custom .= '<p><a href="' . qa_path($urlbase) . '">' . qa_lang_html('widgetanywhere/link_new') . '</a></p>'."\n";
 
 		return [
-			'ok' => $saved_msg,
-
 			'fields' => [
 				[
 					'type' => 'custom',
@@ -342,7 +324,7 @@ class qa_widget_anywhere
 		$widget['pages'] = implode(',', $pages);
 
 		if (strlen($widget['title']) > $this->titleLength) {
-			$errors['title'] = 'Title is too long (max ' . $this->titleLength . ' characters)';
+			$errors['title'] = qa_lang_html_sub('widgetanywhere/error_title_length', $this->titleLength);
 			return $widget;
 		}
 

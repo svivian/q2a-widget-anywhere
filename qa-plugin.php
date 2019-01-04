@@ -24,3 +24,4 @@ if (!defined('QA_VERSION')) {
 
 qa_register_plugin_module('page', 'qa-widget-anywhere.php', 'qa_widget_anywhere', 'Widget Anywhere');
 qa_register_plugin_layer('qa-wa-layer.php', 'Widget Anywhere');
+qa_register_plugin_phrases('qa-wa-lang-*.php', 'widgetanywhere');
